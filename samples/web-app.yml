@@ -1,0 +1,64 @@
+name: Web app CI/CD
+on: [push]
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    x-duration-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run lint
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    x-duration-minutes: 4
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+  security-scan:
+    name: Security scan
+    runs-on: ubuntu-latest
+    x-duration-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm audit
+  build:
+    name: Build
+    needs: [lint, unit-tests, security-scan]
+    runs-on: ubuntu-latest
+    x-duration-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run build
+  docker-image:
+    name: Docker image
+    needs: build
+    runs-on: ubuntu-latest
+    x-duration-minutes: 4
+    steps:
+      - run: docker build -t app .
+  deploy-staging:
+    name: Deploy to staging
+    needs: docker-image
+    runs-on: ubuntu-latest
+    x-duration-minutes: 3
+    steps:
+      - run: ./deploy.sh staging
+  deploy-prod:
+    name: Deploy to production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    x-duration-minutes: 3
+    steps:
+      - run: ./deploy.sh production
+  notify:
+    name: Notify team
+    needs: [deploy-prod]
+    if: always()
+    runs-on: ubuntu-latest
+    x-duration-minutes: 1
+    steps:
+      - run: ./notify.sh

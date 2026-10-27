@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipeline visualizer</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Pipeline visualizer</h1>
+    <p class="lede">Paste a GitHub Actions workflow to see how its jobs connect, which chain sets the total time, and what happens when a job fails.</p>
+  </header>
+
+  <main class="layout">
+    <section class="board" aria-label="Pipeline graph">
+      <div class="board-bar">
+        <div class="actions">
+          <label for="sample">Sample</label>
+          <select id="sample"></select>
+          <button id="run" type="button">Run simulation</button>
+          <button id="reset" type="button" class="quiet">Clear results</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="crit" checked> Highlight critical path</label>
+      </div>
+      <p class="hint" id="failhint">Click a job to make it fail in the next run.</p>
+      <div id="errors" class="errors" role="alert" hidden></div>
+      <div class="canvas-wrap"><svg id="graph" role="img" aria-label="Job dependency graph"></svg></div>
+      <div id="empty" class="empty" hidden>The graph appears here once the workflow is valid.</div>
+      <ul class="legend">
+        <li><span class="dot s-success"></span>Passed</li>
+        <li><span class="dot s-failed"></span>Failed</li>
+        <li><span class="dot s-skipped"></span>Skipped</li>
+        <li><span class="dot s-running"></span>Running</li>
+        <li><span class="line"></span>Critical path</li>
+      </ul>
+    </section>
+
+    <section class="summary" id="summary" aria-live="polite"></section>
+
+    <section class="editor" aria-label="Workflow definition">
+      <label for="source">Workflow (YAML or JSON). The graph updates as you type.</label>
+      <textarea id="source" spellcheck="false" placeholder="Paste your workflow here"></textarea>
+      <p class="hint">Durations: add <code>x-duration-minutes</code> to a job. Without it, each step counts as one minute.</p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

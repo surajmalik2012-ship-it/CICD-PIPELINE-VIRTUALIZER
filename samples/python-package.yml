@@ -1,0 +1,42 @@
+name: Python package
+on: [push, pull_request]
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    x-duration-minutes: 3
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - run: pytest
+  type-check:
+    name: Type check
+    runs-on: ubuntu-latest
+    x-duration-minutes: 2
+    steps:
+      - run: mypy .
+  package:
+    name: Build package
+    needs: [test, type-check]
+    runs-on: ubuntu-latest
+    x-duration-minutes: 2
+    steps:
+      - run: python -m build
+  publish:
+    name: Publish to PyPI
+    needs: package
+    runs-on: ubuntu-latest
+    x-duration-minutes: 1
+    steps:
+      - run: twine upload dist/*
+  rollback-alert:
+    name: Alert on failure
+    needs: [publish]
+    if: failure()
+    runs-on: ubuntu-latest
+    x-duration-minutes: 1
+    steps:
+      - run: ./alert.sh

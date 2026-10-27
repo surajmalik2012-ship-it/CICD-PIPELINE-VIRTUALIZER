@@ -1,0 +1,11 @@
+name: Broken pipeline (circular dependency)
+jobs:
+  build:
+    needs: deploy
+    steps: [{run: make}]
+  test:
+    needs: build
+    steps: [{run: make test}]
+  deploy:
+    needs: test
+    steps: [{run: make deploy}]
